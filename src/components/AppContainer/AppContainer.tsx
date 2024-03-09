@@ -25,7 +25,7 @@ export default function AppContainer() {
 
   
   async function makeRequest(method: string, data = {}, authToken?: string) {
-    const baseUrl = 'http://api.valantis.store:40000';
+    const baseUrl = 'https://api.valantis.store:41000';
     const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
     const body = JSON.stringify(data); // Set body if data is provided
@@ -78,7 +78,6 @@ export default function AppContainer() {
         getFilterByPriceFields(),
         getFilterByNameFields()
       ]);
-      console.log(response, 'tenanq'); // Handle response data
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -107,7 +106,6 @@ export default function AppContainer() {
         const response = await makeRequest('POST', { action: "get_ids", params: { offset, limit: ITEMS_PER_PAGE_LIMIT } }, authToken);
         const items = await fetchItems(response.result);
         setItems(filterUniqueItems(items.result));
-        console.log(response, 'tenanq'); // Handle response data
         // Fetch filters
         await getFilterByBrandFields();
         await getFilterByPriceFields();
@@ -137,7 +135,6 @@ const filterTable = async (columnName: string, filterItem: string) => {
         const response = await makeRequest("POST", { action: "filter", params: { [columnName]: filterItem }}, authToken)
         const items = await makeRequest('POST', { action:"get_items", params: { ids: response.result } }, authToken);
       setItems(items.result.filter(((item : {id: string}, index: number) =>items.result.findIndex((prevItem: { id: string }) => prevItem.id === item.id) === index)))
-      console.log(response, 'filter axpers'); // Handle response data
     } catch (error) {
         console.error('Error:', error);
       }
@@ -165,8 +162,6 @@ const getField = async (field: string) => {
         default:
           break;
       }
-      
-      console.log(response, 'filter axpers'); // Handle response data
     } catch (error) {
       console.error('Error:', error);
     } finally {
