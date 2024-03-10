@@ -15,7 +15,7 @@ import { StyledSelectField } from './styled';
 
 
 // eslint-disable-next-line no-unused-vars
-export default function ProjectsFilters({ filterItem, setFilterItem, filterItems, filterType }: {filterItem: { filterType: string, value: string }, setFilterItem: (el: { filterType: string, value: string }) => void, filterItems: {}, filterType: string}) {
+export default function ProjectsFilters({ filterItem, setFilterItem, filterItems, filterType, setFilterLoading }: {filterItem: { filterType: string, value: string }, setFilterItem: (el: { filterType: string, value: string }) => void, filterItems: {}, filterType: string, setFilterLoading: ((e:boolean) => void)}) {
   const [open, setOpen] = useState(false);
   const disableSelectField = filterItem.value ? (filterItem.filterType !== filterType) : false
   const options = Object.entries(filterItems).filter(([key, value]) => value !== null).map(([key, value]) => ({
@@ -46,7 +46,10 @@ export default function ProjectsFilters({ filterItem, setFilterItem, filterItems
           id="projects_filters"
           displayEmpty
           value={filterItem?.value}
-          onChange={event => setFilterItem({filterType: filterType, value: event.target.value as string})}
+          onChange={event => {
+            setFilterLoading(true)
+            setFilterItem({filterType: filterType, value: event.target.value as string})
+          }}
           onClose={e => { e.stopPropagation(); setOpen(false); }}
           startAdornment={(
             <InputAdornment sx={{ mr: 1, cursor: 'pointer' }} position="start">

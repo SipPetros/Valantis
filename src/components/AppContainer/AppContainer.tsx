@@ -21,6 +21,7 @@ export default function AppContainer() {
 
   const page = useRef(0)
   const [loading, setLoading] = useState(false);
+  const [filterLoading, setFilterLoading] = useState(false);
   const disablePrev = page.current <= 0;
 
   
@@ -28,7 +29,7 @@ export default function AppContainer() {
     const baseUrl = 'https://api.valantis.store:41000';
     const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
-    const body = JSON.stringify(data); // Set body if data is provided
+    const body = JSON.stringify(data);
 
     const options = {
       method,
@@ -37,7 +38,7 @@ export default function AppContainer() {
         'X-Auth': md5(`${authToken}_${timestamp}`),
       },
       mode: 'cors' as RequestMode,
-      body, // No need for the extra if check
+      body,
     };
 
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -49,15 +50,15 @@ export default function AppContainer() {
           }
     
           const data = await response.json();
-          return data; // Return response data
+          return data;
         } catch (error) {
           console.error('Error fetching data:', error);
           // Handle potential retry logic here (e.g., add delay)
           if (attempt < retries) {
             console.log(`Retrying request (attempt: ${attempt + 1} of ${retries})...`);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second before retry
+            await new Promise(resolve => setTimeout(resolve, 1000));
           } else {
-            throw error; // Re-throw for further handling after all retries
+            throw error; 
           }
         }
       }
@@ -82,6 +83,7 @@ export default function AppContainer() {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+      setFilterLoading(false);
     }
   };
   
@@ -129,17 +131,17 @@ export default function AppContainer() {
 
 
 
-const filterTable = async (columnName: string, filterItem: string) => {
-    setLoading(true)
+  const filterTable = async (columnName: string, filterItem: string) => {  
     try {
-        const response = await makeRequest("POST", { action: "filter", params: { [columnName]: filterItem }}, authToken)
-        const items = await makeRequest('POST', { action:"get_items", params: { ids: response.result } }, authToken);
-      setItems(items.result.filter(((item : {id: string}, index: number) =>items.result.findIndex((prevItem: { id: string }) => prevItem.id === item.id) === index)))
+      const response = await makeRequest("POST", { action: "filter", params: { [columnName]: filterItem } }, authToken);
+      const items = await fetchItems(response.result);
+      setItems(items.result.filter(((item: { id: string }, index: number) => items.result.findIndex((prevItem: { id: string }) => prevItem.id === item.id) === index)));
     } catch (error) {
-        console.error('Error:', error);
-      }
-      setLoading(false)
-}
+      console.error('Error:', error);
+    } finally {
+    setFilterLoading(false); 
+    }
+  };
 
 
 const getField = async (field: string) => {
@@ -206,6 +208,7 @@ const FilterSection = () => (
                     setFilterItem={setSearchFilter}
                     filterItems={filterItems}
                     filterType={filterType}
+                    setFilterLoading={setFilterLoading}
                 />
             </Box>
         ))}
@@ -239,7 +242,7 @@ useEffect(() => {
         <CustomTable 
             columns={columns}
             rows={items}
-            loading={loading}
+            loading={!items.length || loading || filterLoading}
             previous={LoadPrevPage}
             next={LoadNextPage}
             disablePrev={disablePrev}

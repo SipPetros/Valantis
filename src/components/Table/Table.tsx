@@ -14,6 +14,7 @@ columns: any, rows: any, next: () => void, previous: () => void, disableNext?: b
         rows={rows}
         columns={columns}
         hideFooter
+        
         loading={loading}
         autoHeight
         initialState={{
